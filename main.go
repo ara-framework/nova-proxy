@@ -15,10 +15,17 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+// ViewJobError is an error happened during and after a view is requesting.
+type ViewJobError struct {
+	Name    string `json:"name"`
+	Message string `json:"message"`
+}
+
 type HypernovaResult struct {
 	Success bool
 	Html    string
 	Name    string
+	Error   ViewJobError
 }
 
 type HypernovaResponse struct {
@@ -77,6 +84,10 @@ func modifyBody(html string) string {
 		batch[uuid]["data"] = data
 	})
 
+	if len(batch) == 0 {
+		return html
+	}
+
 	b, encodeErr := json.Marshal(batch)
 
 	if encodeErr != nil {
@@ -88,7 +99,8 @@ func modifyBody(html string) string {
 	resp, reqErr := http.Post(os.Getenv("HYPERNOVA_BATCH"), "application/json", strings.NewReader(payload))
 
 	if reqErr != nil {
-		log.Fatal(reqErr)
+		log.Println(reqErr)
+		return html
 	}
 
 	defer resp.Body.Close()
@@ -104,14 +116,16 @@ func modifyBody(html string) string {
 	json.Unmarshal(body, &hypernovaResponse)
 
 	for uuid, result := range hypernovaResponse.Results {
+		divQuery := createQuery("div", uuid, result.Name)
+
 		if !result.Success {
-			break
+			doc.Find(divQuery).PrependHtml("<!-- Proxy Error: " + result.Error.Name + " -->")
+			continue
 		}
 
 		scriptQuery := createQuery("script", uuid, result.Name)
 		doc.Find(scriptQuery).Remove()
 
-		divQuery := createQuery("div", uuid, result.Name)
 		doc.Find(divQuery).ReplaceWithHtml(result.Html)
 	}
 
