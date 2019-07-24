@@ -63,14 +63,11 @@ func SetUpLocations() error {
 
 func isValidHeader(r *http.Response) bool {
 	contentType := r.Header.Get("Content-Type")
-	if !strings.HasPrefix(contentType, "text/html") {
-		return false
-	}
-	return true
+	return strings.HasPrefix(contentType, "text/html")
 }
 
 func modifyResponse(r *http.Response) error {
-	if isValidHeader(r) {
+	if !isValidHeader(r) {
 		err := errors.New("Unexpected Content-Type")
 		logger.Error(err)
 		return err
