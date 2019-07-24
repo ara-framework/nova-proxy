@@ -23,7 +23,7 @@ type location struct {
 }
 
 type configuration struct {
-	locations []location
+	Locations []location
 }
 
 var jsonConfig configuration
@@ -47,7 +47,7 @@ func ReadConfigFile() {
 
 // SetUpLocations should add handlers for config.json locations
 func SetUpLocations() error {
-	for _, location := range jsonConfig.locations {
+	for _, location := range jsonConfig.Locations {
 		origin, err := url.Parse(location.Host)
 		logger.Fatal(err, "Malformed Host field ", location.Host)
 
