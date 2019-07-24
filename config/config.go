@@ -54,7 +54,7 @@ func SetUpLocations() error {
 		proxy := httputil.NewSingleHostReverseProxy(origin)
 		if location.ModifyResponse {
 			proxy.ModifyResponse = modifyResponse
-			proxy.Director = modifyRequest
+			proxy.Director = modifyRequest(origin)
 		}
 		http.Handle(location.Path, proxy)
 	}
@@ -89,10 +89,12 @@ func modifyResponse(r *http.Response) error {
 	return nil
 }
 
-func modifyRequest(req *http.Request) {
-	req.Header.Add("X-Forwarded-Host", req.Host)
-	req.Header.Add("X-Origin-Host", origin.Host)
-	req.Header.Del("Accept-Encoding")
-	req.URL.Scheme = "http"
-	req.URL.Host = origin.Host
+func modifyRequest(origin *url.URL) func(req *http.Request) {
+	return func(req *http.Request) {
+		req.Header.Add("X-Forwarded-Host", req.Host)
+		req.Header.Add("X-Origin-Host", origin.Host)
+		req.Header.Del("Accept-Encoding")
+		req.URL.Scheme = "http"
+		req.URL.Host = origin.Host
+	}
 }
