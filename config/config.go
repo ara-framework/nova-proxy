@@ -68,13 +68,12 @@ func isValidHeader(r *http.Response) bool {
 
 func modifyResponse(r *http.Response) error {
 	if !isValidHeader(r) {
-		err := errors.New("Unexpected Content-Type")
-		logger.Error(err)
-		return err
+		return nil
 	}
+
 	html, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		logger.Error(err, "Body was not provided")
+		logger.Error(err, "Malformed HTML in Content Body")
 		return err
 	}
 
