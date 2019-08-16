@@ -37,11 +37,11 @@ func LoadEnv() {
 // ReadConfigFile should initialize once jsonConfig
 func ReadConfigFile() {
 	// logger should stop execution if there is no file found
-	e, err := ioutil.ReadFile("config/" + os.Getenv("CONFIG_FILE"))
+	e, err := ioutil.ReadFile(os.Getenv("CONFIG_FILE"))
 	logger.Error(err, "Config file not found")
 
 	err = json.Unmarshal(e, &jsonConfig)
-	logger.Fatal(err, "Unable to parse config.json")
+	logger.Fatal(err, "Unable to parse " + os.Getenv("CONFIG_FILE"))
 
 }
 
