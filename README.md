@@ -31,7 +31,7 @@ Hypernova Proxy needs a configuration file in order to setup the location for th
 ## Using Hypernova Proxy with Docker
 
 ```Dockerfile
-FROM marconi1992/hypernova-proxy:1.0.1
+FROM araframework/nova-proxy:1.0.5
 
 COPY config.json config.json
 ```
