@@ -1,4 +1,4 @@
-# Hypernova Proxy
+# Nova Proxy
 Hypernova Proxy is an Reverse Proxy whick look in the hosts responses for [Hypernova Directives](https://github.com/marconi1992/hypernova-blade-directive) in order to inject the components rendered by [Hypernova Server](https://github.com/airbnb/hypernova).
 
 ## Environment Variables
@@ -10,28 +10,34 @@ CONFIG_FILE=config.json
 
 ## Configuration File
 
-Hypernova Proxy needs a configuration file in order to setup the location for the reverse proxy, you can also specify which location needs post-process with the Hypernova views.
+Nova Proxy needs a configuration file:
 
 ```json
+//nova-proxy.json
+
 {
   "locations": [
     {
       "path": "/",
       "host": "http://blog:8000",
       "modifyResponse": true
-    },
-    {
-      "path": "/public/client.js",
-      "host": "http://hypernova:3000"
     }
   ]
 }
 ```
 
-## Using Hypernova Proxy with Docker
+The `locations` items require the `path` and `host` to let know to Nova Proxy which the application is responsible to serve the requested page. By default the path `/` passes all the requests to the declared host.
 
-```Dockerfile
-FROM araframework/nova-proxy:1.0.5
+The `modifyResponse` enable the serve-side includes to that location.
 
-COPY config.json config.json
+## Using Nova Proxy with [Ara CLI](https://github.com/ara-framework/ara-cli)
+
+Before to run the command we need to set the `HYPERNOVA_BATCH` variable using the Nova service endpoint.
+
+```shell
+export HYPERNOVA_BATCH=http://localhost:3000/batch
 ```
+
+The command uses a configuration file named `nova-proxy.json` in the folder where the command is running, otherwise you need to pass the `--config` parameter with a different path.
+```
+ara run:proxy --config ./nova-proxy.json
