@@ -40,7 +40,7 @@ func ReadConfigFile() {
 	logger.Error(err, "Config file not found")
 
 	err = json.Unmarshal(e, &jsonConfig)
-	logger.Fatal(err, "Unable to parse " + os.Getenv("CONFIG_FILE"))
+	logger.Fatal(err, "Unable to parse "+os.Getenv("CONFIG_FILE"))
 
 }
 
