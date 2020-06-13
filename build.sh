@@ -2,7 +2,7 @@
 package_name="nova-proxy"
 
 
-platforms=("windows/amd64" "windows/386" "darwin/amd64")
+platforms=("windows/amd64" "windows/386" "darwin/amd64" "linux/amd64")
 
 for platform in "${platforms[@]}"
 do
