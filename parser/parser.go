@@ -19,11 +19,20 @@ type ViewJobError struct {
 	Message string `json:"message"`
 }
 
+type NovaClient struct {
+	Src string `json:"src"`
+}
+
+type Meta struct {
+	NovaClient NovaClient `json:"novaClient"`
+}
+
 type hypernovaResult struct {
 	Success bool
 	Html    string
 	Name    string
 	Error   ViewJobError
+	Meta    Meta
 }
 
 type hypernovaResponse struct {
@@ -95,6 +104,9 @@ func ModifyBody(html string) string {
 
 	json.Unmarshal(body, &hypernovaResponse)
 
+	novaClientUrls := make(map[string]bool)
+	novaViewEntries := make(map[string]string)
+
 	for uuid, result := range hypernovaResponse.Results {
 		divQuery := createQuery("div", uuid, result.Name)
 
@@ -103,10 +115,30 @@ func ModifyBody(html string) string {
 			continue
 		}
 
+		if result.Meta.NovaClient.Src != "" {
+			novaClientUrls[result.Meta.NovaClient.Src] = true
+			novaViewEntries[result.Name] = result.Meta.NovaClient.Src
+		}
+
 		scriptQuery := createQuery("script", uuid, result.Name)
 		doc.Find(scriptQuery).Remove()
 
 		doc.Find(divQuery).ReplaceWithHtml(result.Html)
+	}
+
+	if len(batch) > 0 {
+		bodyNode := doc.Find("body")
+		for url := range novaClientUrls {
+			bodyNode.AppendHtml("<script async src=\"" + url + "\">")
+		}
+
+		b, encodeErr := json.Marshal(novaViewEntries)
+
+		if encodeErr != nil {
+			logger.Fatal(encodeErr, "Cannot encode nova view entries")
+		}
+
+		bodyNode.PrependHtml("<script> window.__NOVA_VIEWS__=" + string(b) + "</script>")
 	}
 
 	html, htmlError := doc.Html()
