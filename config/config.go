@@ -16,9 +16,10 @@ import (
 )
 
 type location struct {
-	Path           string
-	Host           string
-	ModifyResponse bool
+	Path              string
+	Host              string
+	ModifyResponse    bool
+	ProxyPreserveHost bool
 }
 
 type configuration struct {
@@ -40,7 +41,7 @@ func ReadConfigFile() {
 	logger.Error(err, "Config file not found")
 
 	err = json.Unmarshal(e, &jsonConfig)
-	logger.Fatal(err, "Unable to parse " + os.Getenv("CONFIG_FILE"))
+	logger.Fatal(err, "Unable to parse "+os.Getenv("CONFIG_FILE"))
 
 }
 
@@ -53,7 +54,7 @@ func SetUpLocations() error {
 		proxy := httputil.NewSingleHostReverseProxy(origin)
 		if location.ModifyResponse {
 			proxy.ModifyResponse = modifyResponse
-			proxy.Director = modifyRequest(origin)
+			proxy.Director = modifyRequest(origin, location.ProxyPreserveHost)
 		}
 		http.Handle(location.Path, proxy)
 	}
@@ -84,12 +85,15 @@ func modifyResponse(r *http.Response) error {
 	return nil
 }
 
-func modifyRequest(origin *url.URL) func(req *http.Request) {
+func modifyRequest(origin *url.URL, proxyPreserveHost bool) func(req *http.Request) {
 	return func(req *http.Request) {
 		req.Header.Add("X-Forwarded-Host", req.Host)
 		req.Header.Add("X-Origin-Host", origin.Host)
 		req.Header.Del("Accept-Encoding")
 		req.URL.Scheme = "http"
 		req.URL.Host = origin.Host
+		if !proxyPreserveHost {
+			req.Host = origin.Host
+		}
 	}
 }

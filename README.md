@@ -20,7 +20,8 @@ Nova Proxy needs a configuration file:
     {
       "path": "/",
       "host": "http://blog:8000",
-      "modifyResponse": true
+      "modifyResponse": true,
+      "proxyPreserveHost": true
     }
   ]
 }
@@ -29,6 +30,8 @@ Nova Proxy needs a configuration file:
 The `locations` items require the `path` and `host` to let know to Nova Proxy which the application is responsible to serve the requested page. By default the path `/` passes all the requests to the declared host.
 
 The `modifyResponse` enable the serve-side includes to that location.
+
+The `proxyPreserveHost` is used to preserve and retain the original Host: header from the client browser when constructing the proxied request to send to the target server.
 
 ## Using Nova Proxy with [Ara CLI](https://github.com/ara-framework/ara-cli)
 
